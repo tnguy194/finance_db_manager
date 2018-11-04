@@ -1,22 +1,55 @@
 """
 Relationship mapping
-    Ticker
-        relationship to Price
-        foreign key to Exchange
-        foreign key to Security
-    Price
-        foreign key to Ticker
-    Exchange
-        relationship to Ticker
-    Security
-        relationship to Ticker
+Ticker
+    relationship to Price
+    foreign key to Exchange
+    foreign key to Security
+Price
+    foreign key to Ticker
+Exchange
+    relationship to Ticker
+Security
+    relationship to Ticker
 """
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, Numeric, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 
 base = declarative_base()
+
+
+class Security(base):
+    __tablename__ = 'security'
+    id = Column(Integer, primary_key=True)
+    type = Column(String, unique=True)
+
+    def __repr__(self):
+        return f'<Security(type={self.type})>'
+
+
+class Exchange(base):
+    __tablename__ = 'exchange'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+
+def __repr__(self):
+    return f'<Exchange(type={self.name})>'
+
+
+class Ticker(base):
+    __tablename__ = 'ticker' 
+    id = Column(Integer, primary_key=True)
+    ticker = Column(String, unique=True, nullable=False)
+    name = Column(String)
+    exchange_id = Column(Integer, ForeignKey('exchange.id'))
+    security_id = Column(Integer, ForeignKey('security.id'))
+
+    exchange = relationship(Exchange, backref='tickers')
+    security = relationship(Security, backref='tickers')
+
+    def __repr__(self):
+        return f'<Ticker(ticker={self.ticker}, name={self.name}, exchange={self.exchange}, security={self.security})>'
 
 
 class Price(base):
@@ -27,52 +60,12 @@ class Price(base):
     open = Column(Numeric)
     high = Column(Numeric)
     low = Column(Numeric)
-    ticker_id = Column(Integer, ForeignKey('ticker.id'))  # column constraint
+    adj_close = Column(Numeric)
+    ticker_id = Column(Integer, ForeignKey('ticker.id'))
 
-    # def __init__(self, date, open, high, low, ticker):
-    #     self.date = date
-    #     self.open = open
-    #     self.high = high
-    #     self.low = low
+    ticker = relationship(Ticker, backref='prices')
 
-
-class Ticker(base):
-    __tablename__ = 'ticker'
-
-    id = Column(Integer, primary_key=True)
-    ticker = Column(String, unique=True)
-    name = Column(String)
-    exchange_id = Column(Integer, ForeignKey('exchange.id'))
-    security_id = Column(Integer, ForeignKey('security.id'))
-
-    # exchange = relationship('Exchange')
-    # security = relationship('Security')
-    prices = relationship('Price', back_populates='ticker')
-
-    # def __init__(self, ticker, name):
-    #     self.ticker = ticker
-    #     self.name = name
+    def __repr__(self):
+        return f'<Price(date={self.date}, open={self.open}, high={self.high}, low={self.low}, ticker={self.ticker})>'
 
 
-class Security(base):
-    __tablename__ = 'security'
-
-    id = Column(Integer, primary_key=True)
-    type = Column(String, unique=True)
-
-    tickers = relationship('Ticker', back_populates='security')
-
-    # def __init__(self, type):
-    #     self.type = type
-
-
-class Exchange(base):
-    __tablename__ = 'exchange'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-
-    tickers = relationship('Ticker', back_populates='security')
-
-    # def __init__(self, name):
-    #     self.name = name
