@@ -33,8 +33,8 @@ class Exchange(base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
-def __repr__(self):
-    return f'<Exchange(type={self.name})>'
+    def __repr__(self):
+        return f'<Exchange(type={self.name})>'
 
 
 class Ticker(base):
@@ -60,12 +60,17 @@ class Price(base):
     open = Column(Numeric)
     high = Column(Numeric)
     low = Column(Numeric)
+    close = Column(Numeric)
+    volume = Column(Numeric)
     adj_close = Column(Numeric)
     ticker_id = Column(Integer, ForeignKey('ticker.id'))
 
     ticker = relationship(Ticker, backref='prices')
 
     def __repr__(self):
-        return f'<Price(date={self.date}, open={self.open}, high={self.high}, low={self.low}, ticker={self.ticker})>'
+        return (f'<Price(date={self.date}, open={self.open}, '
+                f'high={self.high}, low={self.low}, '
+                f'close={self.close}, volume={self.volume}, '
+                f'adj_close={self.adj_close}, ticker={self.ticker})>')
 
 
